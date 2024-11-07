@@ -1,0 +1,43 @@
+trigger:
+  branches:
+    include:
+      - main  # Change to your default branch
+
+pool:
+  vmImage: 'ubuntu-latest'
+
+variables:
+  GCP_PROJECT_ID: 'gcp-cloudrun-nodejs-mysql-app'
+  GCP_REGION: 'us-central1'  # Change to your preferred region
+  IMAGE_NAME: 'nodejsapp'       # Change to your desired image name
+  IMAGE_VERSION: '1.0.$(Build.BuildId)'  # Adjust versioning as needed
+
+steps:
+# - task: Docker@2
+#   displayName: 'Build Docker Image'
+#   inputs:
+#     command: 'build'
+#     Dockerfile: './gcp_nodejs_app/Dockerfile'  # Adjusted path to the Dockerfile
+#     context: './gcpnodeapp'  # Set the build context to the Dockerfile's directory
+#     tags: |
+#       $(IMAGE_NAME):$(IMAGE_VERSION)  # Use the version variable
+
+#docker login
+- task: Docker@2
+  displayName: 'Log in to Google Container Registry'
+  inputs:
+    containerRegistry: 'docker_registery_connection'
+    command: 'login'
+
+- task: Docker@2
+  inputs:
+    command: buildAndPush
+    repository: '$(GCP_PROJECT_ID)/$(IMAGE_NAME)'
+    dockerfile: './gcp_nodejs_app/Dockerfile'
+    tags: |
+       $(IMAGE_VERSION)
+       latest
+    
+
+
+
