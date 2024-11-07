@@ -9,3 +9,8 @@ steps:
 
 images:
   - 'gcr.io/$PROJECT_ID/nodejs:${_VERSION}'  # Specify the same tag for the built image
+
+
+logsBucket: 'terraformbackendmysqlapplication'
+options:
+  logging: GCS_ONLY
