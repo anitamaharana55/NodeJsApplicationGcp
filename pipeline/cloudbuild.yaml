@@ -1,11 +1,11 @@
 steps:
   # Build the Docker image with a specified version
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['build', '-t', 'gcr.io/$PROJECT_ID/nodejs:${_VERSION}', './gcp_nodejs_app/']
+    args: ['build', '-t', 'gcr.io/$PROJECT_ID/nodejs:{$_VERSION}', './gcp_nodejs_app/']
 
   # Push the Docker image to Google Container Registry
   - name: 'gcr.io/cloud-builders/docker'
-    args: ['push', 'gcr.io/$PROJECT_ID/nodejs:${_VERSION}']
+    args: ['push', 'gcr.io/$PROJECT_ID/nodejs:{$_VERSION}']
 
 images:
   - 'gcr.io/$PROJECT_ID/nodejs:${_VERSION}'  # Specify the same tag for the built image
