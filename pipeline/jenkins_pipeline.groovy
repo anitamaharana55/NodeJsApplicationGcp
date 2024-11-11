@@ -1,0 +1,56 @@
+pipeline {
+    agent any
+    parameters {
+        string(name: 'IMAGE_NAME', defaultValue: 'nodejsapp', description: 'node js app image')  // Image name parameter
+        string(name: 'IMAGE_VERSION', defaultValue: '1.0.0', description: 'Version tag for the Docker image')    // Version tag parameter
+    }
+    environment {
+        GCP_PROJECT_ID = 'gcp-cloudrun-nodejs-mysql-app'      // Replace with your GCP project ID
+        GCP_CREDENTIALS = credentials('gcp-service-account-key') // Replace with your Jenkins Credential ID
+        GCR_HOST = 'gcr.io'                         // Change to 'us.gcr.io', 'eu.gcr.io', or 'asia.gcr.io' as needed
+        DOCKERFILE_PATH = './gcp_nodejs_app/' // Path to your Dockerfile
+        CONTEXT_PATH = './gcp_nodejs_app/'            // Path to the Docker build context
+    }
+    stages {
+        stage('Authenticate to GCP') {
+            steps {
+                script {
+                    // Write service account key to a file and authenticate with GCP
+                    writeFile file: 'gcp-key.json', text: GCP_CREDENTIALS
+                    sh 'gcloud auth activate-service-account --key-file=gcp-key.json'
+                    sh 'gcloud config set project ${GCP_PROJECT_ID}'
+                }
+            }
+        }
+        stage('Docker Login to GCR') {
+            steps {
+                script {
+                    // Login to Google Container Registry
+                    sh "gcloud auth configure-docker ${GCR_HOST}"
+                }
+            }
+        }
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build the Docker image using the specified Dockerfile, context, and version tag
+                    sh "docker build -t ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} -f ${DOCKERFILE_PATH} ${CONTEXT_PATH}"
+                }
+            }
+        }
+        stage('Push Docker Image to GCR') {
+            steps {
+                script {
+                    // Push the Docker image with the version tag to GCR
+                    sh "docker push ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:${params.IMAGE_VERSION}"
+                }
+            }
+        }
+    }
+    post {
+        cleanup {
+            sh 'rm -f gcp-key.json'
+            sh "docker rmi ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} || true"
+        }
+    }
+}
