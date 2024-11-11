@@ -24,12 +24,14 @@ pipeline {
             }
         }
         stage('Authenticate to GCP') {
-        steps {
-                script {
-                    // Write service account key to a file and authenticate with GCP
-                    writeFile file: 'gcp-key.json', text: GCP_CREDENTIALS
-                    sh 'gcloud auth activate-service-account --key-file=gcp-key.json'
-                    sh 'gcloud config set project ${GCP_PROJECT_ID}'
+            steps {
+                // Using the GCP service account key as a secret file
+                withCredentials([file(credentialsId: 'gcp-service-account-key', variable: 'GCP_KEY_FILE')]) {
+                    script {
+                        // Authenticate using the secret file path
+                        sh 'gcloud auth activate-service-account --key-file=$GCP_KEY_FILE'
+                        sh 'gcloud config set project ${GCP_PROJECT_ID}'
+                    }
                 }
             }
         }
