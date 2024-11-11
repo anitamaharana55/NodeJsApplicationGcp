@@ -10,10 +10,21 @@ pipeline {
         GCR_HOST = 'gcr.io'                         // Change to 'us.gcr.io', 'eu.gcr.io', or 'asia.gcr.io' as needed
         DOCKERFILE_PATH = './gcp_nodejs_app/' // Path to your Dockerfile
         CONTEXT_PATH = './gcp_nodejs_app/'            // Path to the Docker build context
+        GIT_REPO_URL = 'https://github.com/anitamaharana55/NodeJsApplicationGcp.git' // Replace with your Git repository URL
+        GIT_CREDENTIALS_ID = 'git-credentials-id'    // Jenkins credential ID for Git (if needed)
     }
     stages {
         stage('Authenticate to GCP') {
+             stage('Checkout Code') {
             steps {
+                // Cloning the repository
+                checkout([$class: 'GitSCM', 
+                    branches: [[name: '*/main']],          // Change 'main' to your branch name
+                    userRemoteConfigs: [[url: "${GIT_REPO_URL}", credentialsId: "${GIT_CREDENTIALS_ID}"]]
+                ])
+            }
+        }
+        steps {
                 script {
                     // Write service account key to a file and authenticate with GCP
                     writeFile file: 'gcp-key.json', text: GCP_CREDENTIALS
