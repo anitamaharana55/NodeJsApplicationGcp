@@ -1,7 +1,7 @@
 pipeline {
     agent any
     parameters {
-        string(name: 'IMAGE_NAME', defaultValue: 'nodejsapp', description: 'node js app image')  // Image name parameter
+        string(name: 'IMAGE_NAME', defaultValue: 'nodejsapp', description: 'Node.js app image')  // Image name parameter
         string(name: 'IMAGE_VERSION', defaultValue: '3.0.0', description: 'Version tag for the Docker image')    // Version tag parameter
     }
     environment {
@@ -46,24 +46,30 @@ pipeline {
         stage('Build Docker Image') {
             steps {
                 script {
-                    // Build the Docker image using the specified Dockerfile, context, and version tag
-                    sh "docker build -t ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} -f ${DOCKERFILE_PATH} ${CONTEXT_PATH}"
+                    // Build the Docker image and tag it with both version and latest tags
+                    sh """
+                    docker build -t ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} -f ${DOCKERFILE_PATH} ${CONTEXT_PATH}
+                    docker tag ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:latest
+                    """
                 }
             }
         }
         stage('Push Docker Image to GCR') {
             steps {
                 script {
-                    // Push the Docker image with the version tag to GCR
+                    // Push both the versioned and latest tagged Docker images to GCR
                     sh "docker push ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:${params.IMAGE_VERSION}"
+                    sh "docker push ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:latest"
                 }
             }
         }
     }
     post {
         cleanup {
+            // Remove the local copies of the images to free up space
             sh 'rm -f gcp-key.json'
             sh "docker rmi ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} || true"
+            sh "docker rmi ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:latest || true"
         }
     }
 }
