@@ -2,7 +2,7 @@ pipeline {
     agent any
     parameters {
         string(name: 'IMAGE_NAME', defaultValue: 'nodejsapp', description: 'node js app image')  // Image name parameter
-        string(name: 'IMAGE_VERSION', defaultValue: '1.0.0', description: 'Version tag for the Docker image')    // Version tag parameter
+        string(name: 'IMAGE_VERSION', defaultValue: '3.0.0', description: 'Version tag for the Docker image')    // Version tag parameter
     }
     environment {
         GCP_PROJECT_ID = 'gcp-cloudrun-nodejs-mysql-app'      // Replace with your GCP project ID
@@ -14,8 +14,7 @@ pipeline {
         GIT_CREDENTIALS_ID = 'git-credentials-id'    // Jenkins credential ID for Git (if needed)
     }
     stages {
-        stage('Authenticate to GCP') {
-             stage('Checkout Code') {
+        stage('Checkout Code') {
             steps {
                 // Cloning the repository
                 checkout([$class: 'GitSCM', 
@@ -24,6 +23,7 @@ pipeline {
                 ])
             }
         }
+        stage('Authenticate to GCP') {
         steps {
                 script {
                     // Write service account key to a file and authenticate with GCP
