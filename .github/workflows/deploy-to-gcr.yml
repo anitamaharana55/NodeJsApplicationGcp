@@ -20,25 +20,33 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v3
 
-      # Step 2: Authenticate to Google Cloud
+      # Step 2: Verify Google Cloud credentials are available
+      - name: Check GCP credentials JSON format
+        run: |
+          echo "${{ secrets.GCP_SA_KEY }}" | jq . || exit 1
+        shell: bash
+        env:
+          GOOGLE_APPLICATION_CREDENTIALS: "${{ secrets.GCP_SA_KEY }}"
+        
+      # Step 3: Authenticate to Google Cloud
       - name: Set up Google Cloud credentials
         uses: google-github-actions/auth@v1
         with:
           credentials_json: "${{ secrets.GCP_SA_KEY }}"  # Use GCP service account JSON key
 
-      # Step 3: Configure Docker to use GCR
+      # Step 4: Configure Docker to use GCR
       - name: Configure Docker for GCR
         run: |
           echo "${{ secrets.GCP_SA_KEY }}" | docker login -u _json_key --password-stdin https://gcr.io
 
-      # Step 4: Build Docker image
+      # Step 5: Build Docker image
       - name: Build Docker image
         run: |
           docker build -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }} \
                        -t gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:latest \
                        -f ./gcp_nodejs_app/Dockerfile ./gcpnodeapp
 
-      # Step 5: Push Docker image to GCR
+      # Step 6: Push Docker image to GCR
       - name: Push Docker image to GCR
         run: |
           docker push gcr.io/${{ env.GCP_PROJECT_ID }}/${{ env.IMAGE_NAME }}:${{ env.IMAGE_VERSION }}
