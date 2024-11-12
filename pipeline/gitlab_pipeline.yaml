@@ -1,0 +1,30 @@
+stages:
+  - build
+  - push
+
+variables:
+  GCP_PROJECT_ID: 'gcp-cloudrun-nodejs-mysql-app'
+  GCP_REGION: 'us-central1'
+  IMAGE_NAME: 'nodejsapp'
+  IMAGE_VERSION: '1.0.${CI_PIPELINE_ID}'  # Use GitLab pipeline ID for versioning
+
+before_script:
+  # Authenticate to Google Cloud
+  - echo "$GCP_SA_KEY" | gcloud auth activate-service-account --key-file=-
+
+docker-build:
+  stage: build
+  image: docker:latest
+  services:
+    - docker:dind  # Enable Docker-in-Docker service for building images
+  script:
+    - docker build -t gcr.io/${GCP_PROJECT_ID}/${IMAGE_NAME}:${IMAGE_VERSION} -t gcr.io/${GCP_PROJECT_ID}/${IMAGE_NAME}:latest -f ./gcp_nodejs_app/Dockerfile ./gcpnodeapp
+
+docker-push:
+  stage: push
+  image: google/cloud-sdk:alpine  # Use Google Cloud SDK image to push to GCR
+  script:
+    - gcloud auth configure-docker --quiet
+    - docker push gcr.io/${GCP_PROJECT_ID}/${IMAGE_NAME}:${IMAGE_VERSION}
+    - docker push gcr.io/${GCP_PROJECT_ID}/${IMAGE_NAME}:latest
+
