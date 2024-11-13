@@ -14,24 +14,6 @@ pipeline {
         GIT_CREDENTIALS_ID = 'git-credentials-id'    // Jenkins credential ID for Git (if needed)
     }
     stages {
-        stage('Install Docker') {
-            steps {
-                script {
-                    // Install Docker on the Jenkins server (if not already installed)
-                    sh '''
-                    if ! [ -x "$(command -v docker)" ]; then
-                        echo "Docker not found. Installing Docker..."
-                        curl -fsSL https://get.docker.com -o get-docker.sh
-                        sudo sh get-docker.sh
-                        sudo usermod -aG docker $USER
-                        rm get-docker.sh
-                    else
-                        echo "Docker is already installed."
-                    fi
-                    '''
-                }
-            }
-        }
         stage('Checkout Code') {
             steps {
                 // Cloning the repository
