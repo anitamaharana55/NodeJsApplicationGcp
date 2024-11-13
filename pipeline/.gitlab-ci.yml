@@ -18,7 +18,7 @@ docker-build:
   services:
     - docker:dind  # Enable Docker-in-Docker service for building images
   script:
-    - docker build -t gcr.io/${GCP_PROJECT_ID}/${IMAGE_NAME}:${IMAGE_VERSION} -t gcr.io/${GCP_PROJECT_ID}/${IMAGE_NAME}:latest -f ./gcp_nodejs_app/Dockerfile ./gcpnodeapp
+    - docker build -t gcr.io/${GCP_PROJECT_ID}/${IMAGE_NAME}:${IMAGE_VERSION} -t gcr.io/${GCP_PROJECT_ID}/${IMAGE_NAME}:latest -f ./gcp_nodejs_app/Dockerfile ./gcp_nodejs_app
 
 docker-push:
   stage: push
