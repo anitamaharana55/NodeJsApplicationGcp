@@ -47,8 +47,8 @@ pipeline {
                 script {
                     // Build the Docker image and tag it with both version and latest tags
                     sh """
-                    sudo docker build -t ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} -f ${DOCKERFILE_PATH} ${CONTEXT_PATH}
-                    sudo docker tag ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:latest
+                    docker build -t ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} -f ${DOCKERFILE_PATH} ${CONTEXT_PATH}
+                    docker tag ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:latest
                     """
                 }
             }
@@ -57,8 +57,8 @@ pipeline {
             steps {
                 script {
                     // Push both the versioned and latest tagged Docker images to GCR
-                    sh "sudo docker push ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:${params.IMAGE_VERSION}"
-                    sh "sudo docker push ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:latest"
+                    sh "docker push ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:${params.IMAGE_VERSION}"
+                    sh "docker push ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:latest"
                 }
             }
         }
@@ -67,8 +67,8 @@ pipeline {
         cleanup {
             // Remove the local copies of the images to free up space
             sh 'rm -f gcp-key.json'
-            sh "sudo docker rmi ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} || true"
-            sh "sudo docker rmi ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:latest || true"
+            sh "docker rmi ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:${params.IMAGE_VERSION} || true"
+            sh "docker rmi ${GCR_HOST}/${GCP_PROJECT_ID}/${params.IMAGE_NAME}:latest || true"
         }
     }
 }
